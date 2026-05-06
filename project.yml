@@ -13,7 +13,7 @@ configs:
   Release: release
 
 packages:
-  MarkdownUI:
+  swift-markdown-ui:
     url: https://github.com/gonzalezreal/swift-markdown-ui
     from: 2.4.1
   LaTeXSwiftUI:
@@ -25,7 +25,6 @@ settings:
     SWIFT_VERSION: "6.0"
     IPHONEOS_DEPLOYMENT_TARGET: "17.0"
     TARGETED_DEVICE_FAMILY: "1,2"
-    DEVELOPMENT_TEAM: ""
     CODE_SIGN_STYLE: Automatic
     SWIFT_STRICT_CONCURRENCY: complete
     DEAD_CODE_STRIPPING: YES
@@ -49,7 +48,7 @@ targets:
     sources:
       - path: Forge
     dependencies:
-      - package: MarkdownUI
+      - package: swift-markdown-ui
         product: MarkdownUI
       - package: LaTeXSwiftUI
         product: LaTeXSwiftUI
