@@ -5,6 +5,9 @@ struct ProfileView: View {
     @AppStorage(AppAccent.storageKey)
     private var accentRaw: String = AppAccent.blue.rawValue
 
+    @State private var showingKeySheet = false
+    @State private var hasStoredKey: Bool = KeychainService.hasKey()
+
     private var accent: AppAccent {
         AppAccent(rawValue: accentRaw) ?? .blue
     }
@@ -20,6 +23,7 @@ struct ProfileView: View {
         ScrollView {
             VStack(spacing: Theme.Spacing.lg) {
                 appearanceSection
+                aiSection
                 aboutSection
             }
             .padding(.vertical, Theme.Spacing.lg)
@@ -27,6 +31,14 @@ struct ProfileView: View {
         .background(Color(.systemGroupedBackground))
         .navigationTitle("Profile")
         .navigationBarTitleDisplayMode(.large)
+        .sheet(isPresented: $showingKeySheet) {
+            KeyEntrySheet(hasStoredKey: $hasStoredKey)
+        }
+        .onChange(of: showingKeySheet) { _, isPresented in
+            if !isPresented {
+                hasStoredKey = KeychainService.hasKey()
+            }
+        }
     }
 
     private var appearanceSection: some View {
@@ -39,6 +51,29 @@ struct ProfileView: View {
                         .foregroundStyle(.secondary)
                     AccentPickerRow(selection: accentBinding)
                 }
+            }
+            .padding(.horizontal, Theme.Spacing.md)
+        }
+    }
+
+    private var aiSection: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+            SectionHeader(
+                "AI",
+                caption: hasStoredKey
+                    ? "Powering Coach and GymBro"
+                    : "Required for Coach and GymBro"
+            )
+            GlassCard(padding: 0) {
+                AppListRow(
+                    icon: hasStoredKey ? "key.fill" : "key",
+                    title: hasStoredKey ? "Qwen connected" : "Connect AI",
+                    subtitle: hasStoredKey
+                        ? AIConfig.defaultModel
+                        : "Add your API key to enable AI features",
+                    action: { showingKeySheet = true }
+                )
+                .padding(.vertical, Theme.Spacing.xs)
             }
             .padding(.horizontal, Theme.Spacing.md)
         }
