@@ -10,8 +10,13 @@ enum WorkoutsRoute: Hashable {
     case workoutDetail(PersistentIdentifier)
 }
 
-/// Root tab bar. PR 2 ships 3 tabs; Library / Coach / GymBro slot in
-/// as their respective PRs land.
+/// Routes pushed inside the Library tab.
+enum LibraryRoute: Hashable {
+    case exerciseDetail(PersistentIdentifier)
+}
+
+/// Root tab bar. PR 3 ships 4 tabs: Workouts, Library, History, Profile.
+/// Coach and GymBro slot in as their respective PRs land.
 ///
 /// Each tab owns its own `NavigationStack` so paths are independent.
 /// The Workouts tab uses an explicit `[WorkoutsRoute]` so child views
@@ -20,11 +25,12 @@ enum WorkoutsRoute: Hashable {
 struct MainTabView: View {
 
     enum Tab: Hashable {
-        case workouts, history, profile
+        case workouts, library, history, profile
     }
 
     @State private var selection: Tab = .workouts
     @State private var workoutsPath: [WorkoutsRoute] = []
+    @State private var libraryPath: [LibraryRoute] = []
     @State private var historyPath = NavigationPath()
 
     @Environment(\.modelContext) private var modelContext
@@ -32,6 +38,7 @@ struct MainTabView: View {
     var body: some View {
         TabView(selection: $selection) {
             workoutsTab
+            libraryTab
             historyTab
             profileTab
         }
@@ -78,6 +85,34 @@ struct MainTabView: View {
                 )
             }
         }
+    }
+
+    // MARK: - Library
+
+    private var libraryTab: some View {
+        NavigationStack(path: $libraryPath) {
+            LibraryView(path: $libraryPath)
+                .navigationDestination(for: LibraryRoute.self) { route in
+                    switch route {
+                    case .exerciseDetail(let id):
+                        if let exercise = modelContext.model(for: id) as? Exercise {
+                            ExerciseDetailView(
+                                exercise: exercise,
+                                workoutsPath: $workoutsPath,
+                                selectedTab: $selection
+                            )
+                        } else {
+                            EmptyStateView(
+                                symbol: "exclamationmark.triangle",
+                                title: "Exercise missing",
+                                message: "It may have been deleted."
+                            )
+                        }
+                    }
+                }
+        }
+        .tabItem { Label("Library", systemImage: "books.vertical") }
+        .tag(Tab.library)
     }
 
     // MARK: - History
