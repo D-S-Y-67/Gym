@@ -185,8 +185,8 @@ struct ExerciseDetailView: View {
         guard session.active != nil else { return }
         Haptics.success()
         session.addExercise(exercise)
-        // Switch to Workouts tab and reset path to the active workout.
-        selectedTab = .workouts
+        // Switch to Home tab and reset path to the active workout.
+        selectedTab = .home
         workoutsPath = [.active]
     }
 

@@ -1,21 +1,31 @@
 import SwiftUI
 import SwiftData
 
-/// Workouts tab root. PR 8 collapsed the previous five-section stack
-/// (active banner, PR banner, Today, Routines, Recent) into:
+/// Home tab root (renamed from Workouts in PR 11).
 ///
-///   1. **Hero card** — date eyebrow + scheduled-routine name + gradient
-///      CTA + 3-stat row + optional PR pill. State machine over
-///      `active / scheduled / unscheduled`.
-///   2. **Routines** — up to 3 saved routines (existing behavior).
-///   3. **Activity** — most recent finished workout (just one), with a
-///      "View all" button that pushes the History list under Profile.
+/// Sections (top to bottom):
+///   1. **Hero block** — full-bleed gradient with day numeral, scheduled
+///      routine, gradient CTA, stats row.
+///   2. **Routines** — up to 3 saved routines.
+///   3. **Body** — heat-mapped figure preview, taps into BodyView.
+///   4. **Library** — horizontal carousel of body-part cards. Surfaces
+///      what was previously a top-level tab. Taps push LibraryView with
+///      that body part pre-filtered.
+///   5. **Activity** — most recent finished workout.
+///
+/// Plus a **floating circular Coach button** at bottom-trailing — a one-tap
+/// shortcut to the workout-aware AI, presented as a sheet so the user
+/// returns to Home with a swipe down.
 struct WorkoutsHomeView: View {
 
     @Binding var path: [WorkoutsRoute]
 
     @Environment(WorkoutSessionStore.self) private var session
     @Environment(\.modelContext) private var modelContext
+
+    @State private var showingCoach = false
+
+    @Query(sort: \Exercise.name) private var allExercises: [Exercise]
 
     @Query(
         filter: #Predicate<Workout> { $0.endedAt != nil },
@@ -59,10 +69,11 @@ struct WorkoutsHomeView: View {
                 VStack(spacing: Theme.Spacing.lg) {
                     routinesSection
                     bodySection
+                    librarySection
                     activitySection
                 }
                 .padding(.top, Theme.Spacing.lg)
-                .padding(.bottom, Theme.Spacing.lg)
+                .padding(.bottom, Theme.Spacing.xxl + Theme.Spacing.lg)
             }
         }
         .background(Theme.Palette.surfaceBackground)
@@ -70,6 +81,40 @@ struct WorkoutsHomeView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .navigationBar)
         .ignoresSafeArea(edges: .top)
+        .overlay(alignment: .bottomTrailing) {
+            floatingCoachButton
+        }
+        .sheet(isPresented: $showingCoach) {
+            NavigationStack {
+                CoachView()
+                    .toolbar {
+                        ToolbarItem(placement: .topBarLeading) {
+                            Button("Done") { showingCoach = false }
+                        }
+                    }
+            }
+        }
+    }
+
+    // MARK: - Floating Coach button
+
+    private var floatingCoachButton: some View {
+        Button {
+            Haptics.tap()
+            showingCoach = true
+        } label: {
+            Image(systemName: "sparkles")
+                .font(.title2.weight(.bold))
+                .foregroundStyle(.white)
+                .frame(width: 56, height: 56)
+                .background(
+                    Circle().fill(Theme.Palette.accentGradient(.accentColor))
+                )
+                .shadow(color: .black.opacity(0.22), radius: 10, y: 5)
+        }
+        .accessibilityLabel("Ask Coach")
+        .padding(.trailing, Theme.Spacing.md)
+        .padding(.bottom, Theme.Spacing.md)
     }
 
     // MARK: - Hero state
@@ -428,6 +473,56 @@ struct WorkoutsHomeView: View {
         }
     }
 
+    // MARK: - Library carousel (PR 11)
+
+    /// Body-parts present in the seeded library, ordered upper-to-lower
+    /// for natural left-to-right reading.
+    private static let libraryOrder = [
+        "Chest", "Back", "Shoulders", "Arms",
+        "Forearms", "Core", "Legs", "Glutes", "Calves"
+    ]
+
+    private var libraryGroups: [(bodyPart: String, count: Int)] {
+        let counts = Dictionary(grouping: allExercises, by: { $0.bodyPart })
+            .mapValues { $0.count }
+        let known = Self.libraryOrder.compactMap { name -> (String, Int)? in
+            guard let count = counts[name], count > 0 else { return nil }
+            return (name, count)
+        }
+        let extras = counts.keys
+            .filter { !Self.libraryOrder.contains($0) && (counts[$0] ?? 0) > 0 }
+            .sorted()
+            .map { ($0, counts[$0] ?? 0) }
+        return known + extras
+    }
+
+    private var librarySection: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+            SectionHeader("Library", caption: "Browse exercises by body part") {
+                Button("All") {
+                    Haptics.tap()
+                    path.append(.library)
+                }
+                .font(.subheadline.weight(.semibold))
+                .accessibilityLabel("Open full library")
+            }
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: Theme.Spacing.sm) {
+                    ForEach(Array(libraryGroups.enumerated()), id: \.element.bodyPart) { _, group in
+                        LibraryBodyPartCard(
+                            bodyPart: group.bodyPart,
+                            exerciseCount: group.count
+                        ) {
+                            Haptics.selection()
+                            path.append(.library)
+                        }
+                    }
+                }
+                .padding(.horizontal, Theme.Spacing.md)
+            }
+        }
+    }
+
     // MARK: - Activity section (last finished workout)
 
     private var activitySection: some View {
@@ -563,4 +658,62 @@ private struct RecentWorkoutRow: View {
 
 private extension Workout {
     var exerciseCount: Int { exercises.count }
+}
+
+// MARK: - Library body-part card (carousel item)
+
+/// Compact card used in the Home Library carousel. Shows the body-part
+/// name with a stylized accent block and the exercise count. The whole
+/// card is tappable.
+private struct LibraryBodyPartCard: View {
+    let bodyPart: String
+    let exerciseCount: Int
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(Theme.Palette.accentGradient(.accentColor))
+                    Image(systemName: symbolName)
+                        .font(.system(size: 28, weight: .semibold))
+                        .foregroundStyle(.white)
+                }
+                .frame(width: 60, height: 60)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(bodyPart)
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+                    Text("\(exerciseCount)")
+                        .font(.caption.monospacedDigit().weight(.heavy))
+                        .foregroundStyle(.secondary)
+                        .tracking(0.5)
+                }
+            }
+            .padding(Theme.Spacing.md)
+            .frame(width: 124, alignment: .leading)
+            .appGlassBackground(cornerRadius: Theme.Radius.lg)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("\(bodyPart), \(exerciseCount) exercises")
+    }
+
+    private var symbolName: String {
+        switch bodyPart.lowercased() {
+        case "chest":      return "figure.strengthtraining.traditional"
+        case "back":       return "figure.rower"
+        case "shoulders":  return "figure.boxing"
+        case "arms":       return "dumbbell.fill"
+        case "forearms":   return "hand.raised.fill"
+        case "core":       return "figure.core.training"
+        case "legs":       return "figure.run"
+        case "glutes":     return "figure.walk"
+        case "calves":     return "figure.step.training"
+        default:           return "figure"
+        }
+    }
 }

@@ -1,8 +1,12 @@
 import SwiftUI
 import SwiftData
 
-/// Routes pushed inside the Workouts tab. Hashable via `PersistentIdentifier`
+/// Routes pushed inside the Home tab. Hashable via `PersistentIdentifier`
 /// so SwiftData models can be referenced without violating Sendable.
+///
+/// PR 11 collapsed `LibraryRoute.exerciseDetail` into this enum since
+/// Library is no longer a separate tab. All Home → sub-screen pushes go
+/// through this single homogeneous path.
 enum WorkoutsRoute: Hashable {
     case active
     case routines
@@ -10,54 +14,51 @@ enum WorkoutsRoute: Hashable {
     case workoutDetail(PersistentIdentifier)
     case weeklySchedule
     case body
-}
-
-/// Routes pushed inside the Library tab.
-enum LibraryRoute: Hashable {
+    case library
     case exerciseDetail(PersistentIdentifier)
 }
 
-/// Root tab bar. PR 7 ships 5 tabs: Workouts, Library, GymBro, Coach, Profile.
-/// History folded into Profile to keep the tab bar at five with Coach added.
+/// Root tab bar. PR 11 collapsed five tabs to three: **Home · AI · Profile**.
 ///
-/// Each tab owns its own `NavigationStack` so paths are independent.
-/// The Workouts tab uses an explicit `[WorkoutsRoute]` so child views
-/// can pop to root and push the active workout in one step (e.g. when
-/// starting a session from a routine deep in the editor).
+/// - Library is no longer a tab — its content surfaces on Home as a
+///   horizontal carousel and the full screen is reachable via push from
+///   Home (`WorkoutsRoute.library`).
+/// - GymBro and Coach merged into a single AI hub. The AI tab opens
+///   `AIHubView`, which pushes either chat onto its own NavigationStack.
+/// - Coach is also a one-tap shortcut from Home via a floating circular
+///   button that presents `CoachView` as a sheet.
 struct MainTabView: View {
 
     enum Tab: Hashable {
-        case workouts, library, gymBro, coach, profile
+        case home, ai, profile
     }
 
-    @State private var selection: Tab = .workouts
+    @State private var selection: Tab = .home
     @State private var workoutsPath: [WorkoutsRoute] = []
-    @State private var libraryPath: [LibraryRoute] = []
+    @State private var aiPath: [AIRoute] = []
     @State private var profilePath = NavigationPath()
 
     @Environment(\.modelContext) private var modelContext
 
     var body: some View {
         TabView(selection: $selection) {
-            workoutsTab
-            libraryTab
-            gymBroTab
-            coachTab
+            homeTab
+            aiTab
             profileTab
         }
     }
 
-    // MARK: - Workouts
+    // MARK: - Home (was Workouts)
 
-    private var workoutsTab: some View {
+    private var homeTab: some View {
         NavigationStack(path: $workoutsPath) {
             WorkoutsHomeView(path: $workoutsPath)
                 .navigationDestination(for: WorkoutsRoute.self) { route in
                     workoutsDestination(for: route)
                 }
         }
-        .tabItem { Label("Workouts", systemImage: "dumbbell") }
-        .tag(Tab.workouts)
+        .tabItem { Label("Home", systemImage: "dumbbell") }
+        .tag(Tab.home)
     }
 
     @ViewBuilder
@@ -91,55 +92,43 @@ struct MainTabView: View {
             WeeklyScheduleView(path: $workoutsPath)
         case .body:
             BodyView()
+        case .library:
+            LibraryView { id in
+                workoutsPath.append(.exerciseDetail(id))
+            }
+        case .exerciseDetail(let id):
+            if let exercise = modelContext.model(for: id) as? Exercise {
+                ExerciseDetailView(
+                    exercise: exercise,
+                    workoutsPath: $workoutsPath,
+                    selectedTab: $selection
+                )
+            } else {
+                EmptyStateView(
+                    symbol: "exclamationmark.triangle",
+                    title: "Exercise missing",
+                    message: "It may have been deleted."
+                )
+            }
         }
     }
 
-    // MARK: - Library
+    // MARK: - AI (GymBro + Coach)
 
-    private var libraryTab: some View {
-        NavigationStack(path: $libraryPath) {
-            LibraryView(path: $libraryPath)
-                .navigationDestination(for: LibraryRoute.self) { route in
+    private var aiTab: some View {
+        NavigationStack(path: $aiPath) {
+            AIHubView(path: $aiPath)
+                .navigationDestination(for: AIRoute.self) { route in
                     switch route {
-                    case .exerciseDetail(let id):
-                        if let exercise = modelContext.model(for: id) as? Exercise {
-                            ExerciseDetailView(
-                                exercise: exercise,
-                                workoutsPath: $workoutsPath,
-                                selectedTab: $selection
-                            )
-                        } else {
-                            EmptyStateView(
-                                symbol: "exclamationmark.triangle",
-                                title: "Exercise missing",
-                                message: "It may have been deleted."
-                            )
-                        }
+                    case .gymBro:
+                        GymBroView()
+                    case .coach:
+                        CoachView()
                     }
                 }
         }
-        .tabItem { Label("Library", systemImage: "books.vertical") }
-        .tag(Tab.library)
-    }
-
-    // MARK: - GymBro
-
-    private var gymBroTab: some View {
-        NavigationStack {
-            GymBroView()
-        }
-        .tabItem { Label("GymBro", systemImage: "bubble.left.and.text.bubble.right") }
-        .tag(Tab.gymBro)
-    }
-
-    // MARK: - Coach
-
-    private var coachTab: some View {
-        NavigationStack {
-            CoachView()
-        }
-        .tabItem { Label("Coach", systemImage: "figure.strengthtraining.traditional") }
-        .tag(Tab.coach)
+        .tabItem { Label("AI", systemImage: "sparkles") }
+        .tag(Tab.ai)
     }
 
     // MARK: - Profile

@@ -1,11 +1,21 @@
 import SwiftUI
 import SwiftData
 
-/// Library tab root. Search bar + body-part chip filter + scrollable list
-/// (sectioned by body part, or flat when filtering / searching).
+/// Full exercise library. Search bar + body-part chip filter + scrollable
+/// list (sectioned by body part, or flat when filtering / searching).
+///
+/// PR 11 dropped the path-binding API; the view now exposes a callback
+/// (`onSelectExercise`) so it can be hosted in any NavigationStack
+/// without the route enum types matching. Home is the canonical host.
 struct LibraryView: View {
 
-    @Binding var path: [LibraryRoute]
+    /// Called when the user taps an exercise row. Hosting view decides
+    /// how to navigate (typically `path.append(.exerciseDetail(id))`).
+    let onSelectExercise: (PersistentIdentifier) -> Void
+
+    /// Optional body-part name used as the initial filter when entering
+    /// the library from a Home carousel card. `nil` opens unfiltered.
+    var initialBodyPart: String?
 
     @Query(sort: \Exercise.name) private var allExercises: [Exercise]
 
@@ -69,6 +79,11 @@ struct LibraryView: View {
         .navigationTitle("Library")
         .navigationBarTitleDisplayMode(.large)
         .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search exercises")
+        .onAppear {
+            if let initialBodyPart, selectedBodyPart == nil {
+                selectedBodyPart = initialBodyPart
+            }
+        }
     }
 
     private var content: some View {
@@ -154,7 +169,7 @@ struct LibraryView: View {
     private func exerciseRow(_ exercise: Exercise) -> some View {
         Button {
             Haptics.selection()
-            path.append(.exerciseDetail(exercise.persistentModelID))
+            onSelectExercise(exercise.persistentModelID)
         } label: {
             HStack(spacing: Theme.Spacing.md) {
                 VStack(alignment: .leading, spacing: 2) {
