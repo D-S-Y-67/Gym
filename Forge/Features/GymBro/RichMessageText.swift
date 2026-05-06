@@ -40,9 +40,9 @@ struct RichMessageText: View {
                 .markdownTheme(.gymBro)
                 .textSelection(.enabled)
         case .displayMath(let tex):
+            // `tex` keeps its `$$…$$` delimiters, so LaTeXSwiftUI's default
+            // parsing mode renders it as display-style math.
             LaTeX(tex)
-                .parsingMode(.all)
-                .blockMode(.alwaysBlock)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .textSelection(.enabled)
         }
@@ -76,9 +76,11 @@ struct RichMessageText: View {
                 segments.append(.markdown(prefix))
             }
 
-            let tex = String(match.output.1).trimmingCharacters(in: .whitespacesAndNewlines)
-            if !tex.isEmpty {
-                segments.append(.displayMath(tex))
+            let inner = String(match.output.1).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !inner.isEmpty {
+                // Keep the `$$…$$` delimiters so LaTeXSwiftUI parses it as
+                // display math.
+                segments.append(.displayMath("$$\(inner)$$"))
             }
 
             cursor = match.range.upperBound
@@ -101,6 +103,9 @@ private extension MarkdownUI.Theme {
     ///
     /// Computed (not `static let`) so we don't have to prove `Sendable`
     /// for MarkdownUI's `Theme` — each access constructs a fresh instance.
+    /// `@MainActor` because the theme's view builders call MainActor-only
+    /// SwiftUI APIs (`relativeLineSpacing`, `markdownTextStyle`).
+    @MainActor
     static var gymBro: MarkdownUI.Theme {
         MarkdownUI.Theme()
         .text {
