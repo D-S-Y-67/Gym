@@ -23,6 +23,7 @@ struct RoutineEditorView: View {
         ScrollView {
             VStack(spacing: Theme.Spacing.lg) {
                 nameCard
+                scheduleCard
                 exercisesCard
                 addExerciseButton
             }
@@ -52,6 +53,30 @@ struct RoutineEditorView: View {
                     .textFieldStyle(.plain)
                     .font(.headline)
                     .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(.horizontal, Theme.Spacing.md)
+        }
+    }
+
+    private var scheduleCard: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+            SectionHeader(
+                "Schedule",
+                caption: routine.scheduledDays.isEmpty
+                    ? "Tap days to plan this routine into your week"
+                    : scheduledSummary
+            )
+            GlassCard {
+                HStack(spacing: Theme.Spacing.xs) {
+                    ForEach(orderedDays, id: \.self) { day in
+                        DayChip(
+                            label: shortLabel(for: day),
+                            isOn: routine.scheduledDays.contains(day),
+                            action: { toggleDay(day) }
+                        )
+                    }
+                }
+                .frame(maxWidth: .infinity)
             }
             .padding(.horizontal, Theme.Spacing.md)
         }
@@ -144,6 +169,60 @@ struct RoutineEditorView: View {
             modelContext.delete(routine)
             try? modelContext.save()
         }
+    }
+
+    // MARK: - Schedule
+
+    private var orderedDays: [Int] {
+        let first = Calendar.current.firstWeekday
+        return (0..<7).map { ((first - 1 + $0) % 7) + 1 }
+    }
+
+    /// One-letter labels in the user's locale order. Distinguishes T/T and S/S
+    /// is fine for chip usage; full names show in the Week tab.
+    private func shortLabel(for weekday: Int) -> String {
+        let symbols = Calendar.current.veryShortStandaloneWeekdaySymbols
+        return symbols[(weekday - 1) % 7]
+    }
+
+    private var scheduledSummary: String {
+        let symbols = Calendar.current.shortStandaloneWeekdaySymbols
+        let names = orderedDays
+            .filter { routine.scheduledDays.contains($0) }
+            .map { symbols[($0 - 1) % 7] }
+        return names.joined(separator: " · ")
+    }
+
+    private func toggleDay(_ day: Int) {
+        Haptics.selection()
+        if let idx = routine.scheduledDays.firstIndex(of: day) {
+            routine.scheduledDays.remove(at: idx)
+        } else {
+            routine.scheduledDays.append(day)
+        }
+        try? modelContext.save()
+    }
+}
+
+// MARK: - Day chip
+
+private struct DayChip: View {
+    let label: String
+    let isOn: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(label)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(isOn ? Color.white : Color.primary)
+                .frame(maxWidth: .infinity, minHeight: 36)
+                .background(isOn ? Color.accentColor : Color(.tertiarySystemBackground))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.sm, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
+        .accessibilityAddTraits(isOn ? .isSelected : [])
     }
 }
 

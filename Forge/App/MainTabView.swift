@@ -8,6 +8,7 @@ enum WorkoutsRoute: Hashable {
     case routines
     case editRoutine(PersistentIdentifier)
     case workoutDetail(PersistentIdentifier)
+    case weeklySchedule
 }
 
 /// Routes pushed inside the Library tab.
@@ -86,6 +87,8 @@ struct MainTabView: View {
                     message: "It may have been deleted."
                 )
             }
+        case .weeklySchedule:
+            WeeklyScheduleView(path: $workoutsPath)
         }
     }
 

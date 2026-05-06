@@ -34,11 +34,22 @@ struct WorkoutsHomeView: View {
         return recentPRs.filter { $0.achievedAt >= cutoff }
     }
 
+    private var todayRoutines: [Routine] {
+        routines.filter { $0.isScheduledToday }
+    }
+
+    private var hasAnySchedule: Bool {
+        routines.contains { !$0.scheduledDays.isEmpty }
+    }
+
     var body: some View {
         ScrollView {
             VStack(spacing: Theme.Spacing.lg) {
                 if let active = session.active {
                     activeBanner(workout: active)
+                }
+                if !todayRoutines.isEmpty {
+                    todaySection
                 }
                 if !weekPRs.isEmpty {
                     prBanner
@@ -116,15 +127,80 @@ struct WorkoutsHomeView: View {
         .accessibilityElement(children: .combine)
     }
 
+    private var todaySection: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+            SectionHeader(
+                "Today",
+                caption: Date.now.formatted(.dateTime.weekday(.wide).month(.abbreviated).day())
+            ) {
+                Button("Week") {
+                    Haptics.tap()
+                    path.append(.weeklySchedule)
+                }
+                .font(.subheadline.weight(.semibold))
+                .accessibilityLabel("View week")
+            }
+
+            GlassCard(padding: 0) {
+                VStack(spacing: 0) {
+                    ForEach(todayRoutines) { routine in
+                        Button {
+                            Haptics.selection()
+                            path.append(.editRoutine(routine.persistentModelID))
+                        } label: {
+                            HStack(spacing: Theme.Spacing.md) {
+                                Image(systemName: "flame.fill")
+                                    .font(.title3)
+                                    .foregroundStyle(.tint)
+                                    .frame(width: 28)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(routine.name.isEmpty ? "Untitled routine" : routine.name)
+                                        .font(.headline)
+                                    Text("\(routine.exercises.count) exercises  ·  scheduled today")
+                                        .font(.footnote)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.footnote.weight(.semibold))
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(.horizontal, Theme.Spacing.md)
+                            .padding(.vertical, Theme.Spacing.sm + 4)
+                            .frame(minHeight: 44)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        if routine.id != todayRoutines.last?.id {
+                            Divider().padding(.leading, 56)
+                        }
+                    }
+                }
+                .padding(.vertical, Theme.Spacing.xs)
+            }
+            .padding(.horizontal, Theme.Spacing.md)
+        }
+    }
+
     private var routinesSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
             SectionHeader("Routines", caption: routines.isEmpty ? nil : "Tap to edit or start") {
-                Button("Manage") {
-                    Haptics.tap()
-                    path.append(.routines)
+                HStack(spacing: Theme.Spacing.md) {
+                    if hasAnySchedule && todayRoutines.isEmpty {
+                        Button("Week") {
+                            Haptics.tap()
+                            path.append(.weeklySchedule)
+                        }
+                        .font(.subheadline.weight(.semibold))
+                        .accessibilityLabel("View week")
+                    }
+                    Button("Manage") {
+                        Haptics.tap()
+                        path.append(.routines)
+                    }
+                    .font(.subheadline.weight(.semibold))
+                    .accessibilityLabel("Manage routines")
                 }
-                .font(.subheadline.weight(.semibold))
-                .accessibilityLabel("Manage routines")
             }
 
             if routines.isEmpty {

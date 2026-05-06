@@ -165,6 +165,10 @@ final class Routine {
     var createdAt: Date = Date.now
     var lastUsedAt: Date?
 
+    /// Calendar weekday indices (1 = Sunday … 7 = Saturday) on which this
+    /// routine is scheduled. Empty = unscheduled. PR 6 weekly view.
+    var scheduledDays: [Int] = []
+
     @Relationship(deleteRule: .cascade, inverse: \RoutineExercise.parentRoutine)
     var exercises: [RoutineExercise] = []
 
@@ -172,16 +176,26 @@ final class Routine {
         id: UUID = UUID(),
         name: String = "",
         createdAt: Date = .now,
-        lastUsedAt: Date? = nil
+        lastUsedAt: Date? = nil,
+        scheduledDays: [Int] = []
     ) {
         self.id = id
         self.name = name
         self.createdAt = createdAt
         self.lastUsedAt = lastUsedAt
+        self.scheduledDays = scheduledDays
     }
 
     var orderedExercises: [RoutineExercise] {
         exercises.sorted { $0.exerciseIndex < $1.exerciseIndex }
+    }
+
+    func isScheduled(on weekday: Int) -> Bool {
+        scheduledDays.contains(weekday)
+    }
+
+    var isScheduledToday: Bool {
+        isScheduled(on: Calendar.current.component(.weekday, from: .now))
     }
 }
 
