@@ -62,7 +62,7 @@ struct ExerciseDetailView: View {
             }
             .padding(.vertical, Theme.Spacing.lg)
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Theme.Palette.surfaceBackground)
         .navigationTitle(exercise.name)
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .bottom) {

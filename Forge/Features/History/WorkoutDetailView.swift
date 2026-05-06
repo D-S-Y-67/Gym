@@ -31,7 +31,7 @@ struct WorkoutDetailView: View {
             }
             .padding(.vertical, Theme.Spacing.lg)
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Theme.Palette.surfaceBackground)
         .navigationTitle(navigationTitle)
         .navigationBarTitleDisplayMode(.inline)
     }

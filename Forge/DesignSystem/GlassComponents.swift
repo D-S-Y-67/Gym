@@ -176,7 +176,13 @@ private struct GlassButtonStyling: ViewModifier {
 
 // MARK: - SectionHeader
 
-/// Large title with an optional caption and trailing accessory.
+/// Section delimiter: an eyebrow-styled label (small, uppercase, tracked)
+/// with an optional caption beneath and an optional trailing accessory.
+///
+/// Visual weight intentionally lives in the cards below, not in this header.
+/// PR 8 swapped the previous large `.title2` title for the eyebrow so the
+/// app reads as magazine-organized rather than a stack of system table
+/// section headers.
 struct SectionHeader<Trailing: View>: View {
     let title: String
     let caption: String?
@@ -194,10 +200,8 @@ struct SectionHeader<Trailing: View>: View {
 
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.title2.weight(.semibold))
-                    .foregroundStyle(.primary)
+            VStack(alignment: .leading, spacing: 4) {
+                Theme.Typo.eyebrow(title)
                 if let caption {
                     Text(caption)
                         .font(.subheadline)

@@ -62,7 +62,7 @@ struct ActiveWorkoutView: View {
             }
             .padding(.vertical, Theme.Spacing.md)
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Theme.Palette.surfaceBackground)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {

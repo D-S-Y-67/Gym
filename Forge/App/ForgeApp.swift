@@ -36,6 +36,7 @@ struct ForgeApp: App {
         WindowGroup {
             RootView()
                 .tint(accent.color)
+                .fontDesign(.rounded)
                 .environment(session)
                 .environment(restTimer)
         }

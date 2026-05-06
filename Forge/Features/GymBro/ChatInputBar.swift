@@ -26,7 +26,7 @@ struct ChatInputBar: View {
                 .focused($focused)
                 .padding(.horizontal, Theme.Spacing.md)
                 .padding(.vertical, Theme.Spacing.sm + 2)
-                .background(Color(.secondarySystemBackground))
+                .background(Theme.Palette.surfaceSubtle)
                 .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.lg, style: .continuous))
                 .submitLabel(.send)
                 .onSubmit {

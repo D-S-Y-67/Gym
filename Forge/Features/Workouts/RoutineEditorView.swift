@@ -29,7 +29,7 @@ struct RoutineEditorView: View {
             }
             .padding(.vertical, Theme.Spacing.lg)
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Theme.Palette.surfaceBackground)
         .navigationTitle("Edit Routine")
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .bottom) {

@@ -25,7 +25,7 @@ struct HistoryCalendarSheet: View {
                 legend
             }
             .padding(Theme.Spacing.md)
-            .background(Color(.systemGroupedBackground))
+            .background(Theme.Palette.surfaceBackground)
             .navigationTitle("Calendar")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

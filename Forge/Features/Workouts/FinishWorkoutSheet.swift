@@ -22,7 +22,7 @@ struct FinishWorkoutSheet: View {
                 }
                 .padding(.vertical, Theme.Spacing.lg)
             }
-            .background(Color(.systemGroupedBackground))
+            .background(Theme.Palette.surfaceBackground)
             .navigationTitle("Finish Workout")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

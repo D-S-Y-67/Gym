@@ -49,7 +49,7 @@ struct WeeklyScheduleView: View {
             }
             .padding(.vertical, Theme.Spacing.lg)
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Theme.Palette.surfaceBackground)
         .navigationTitle("Week")
         .navigationBarTitleDisplayMode(.large)
     }
@@ -184,7 +184,7 @@ private struct RoutineRow: View {
             .padding(.horizontal, Theme.Spacing.sm)
             .padding(.vertical, Theme.Spacing.sm)
             .frame(minHeight: 44)
-            .background(Color(.tertiarySystemBackground))
+            .background(Theme.Palette.surfaceSubtle)
             .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.sm, style: .continuous))
             .contentShape(Rectangle())
         }

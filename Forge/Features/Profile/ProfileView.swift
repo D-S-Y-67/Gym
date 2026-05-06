@@ -33,13 +33,12 @@ struct ProfileView: View {
         ScrollView {
             VStack(spacing: Theme.Spacing.lg) {
                 historySection
-                appearanceSection
-                aiSection
+                settingsSection
                 aboutSection
             }
             .padding(.vertical, Theme.Spacing.lg)
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Theme.Palette.surfaceBackground)
         .navigationTitle("Profile")
         .navigationBarTitleDisplayMode(.large)
         .sheet(isPresented: $showingKeySheet) {
@@ -112,42 +111,53 @@ struct ProfileView: View {
         }
     }
 
-    private var appearanceSection: some View {
+    /// PR 8 merged "Appearance" and "AI" into one Settings card so the
+    /// profile reads as three sections (History, Settings, About) instead
+    /// of four. AI key sits on top, accent picker below — same content, less
+    /// visual fragmentation.
+    private var settingsSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-            SectionHeader("Appearance", caption: "Pick the accent that matches your vibe")
-            GlassCard {
-                VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-                    Text("Accent color")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    AccentPickerRow(selection: accentBinding)
+            SectionHeader(
+                "Settings",
+                caption: hasStoredKey
+                    ? "AI is connected — pick your accent below."
+                    : "Add your AI key, then choose an accent."
+            )
+            GlassCard(padding: 0) {
+                VStack(spacing: 0) {
+                    AppListRow(
+                        icon: hasStoredKey ? "key.fill" : "key",
+                        title: hasStoredKey ? "Qwen connected" : "Connect AI",
+                        subtitle: hasStoredKey
+                            ? AIConfig.defaultModel
+                            : "Add your API key to enable AI features",
+                        action: { showingKeySheet = true }
+                    )
+                    Divider().padding(.leading, 56)
+                    accentRow
                 }
+                .padding(.vertical, Theme.Spacing.xs)
             }
             .padding(.horizontal, Theme.Spacing.md)
         }
     }
 
-    private var aiSection: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-            SectionHeader(
-                "AI",
-                caption: hasStoredKey
-                    ? "Powering Coach and GymBro"
-                    : "Required for Coach and GymBro"
-            )
-            GlassCard(padding: 0) {
-                AppListRow(
-                    icon: hasStoredKey ? "key.fill" : "key",
-                    title: hasStoredKey ? "Qwen connected" : "Connect AI",
-                    subtitle: hasStoredKey
-                        ? AIConfig.defaultModel
-                        : "Add your API key to enable AI features",
-                    action: { showingKeySheet = true }
-                )
-                .padding(.vertical, Theme.Spacing.xs)
-            }
-            .padding(.horizontal, Theme.Spacing.md)
+    private var accentRow: some View {
+        HStack(spacing: Theme.Spacing.md) {
+            Image(systemName: "paintpalette.fill")
+                .font(.title3)
+                .foregroundStyle(.tint)
+                .frame(width: 28, height: 28)
+                .accessibilityHidden(true)
+            Text("Accent")
+                .foregroundStyle(.primary)
+            Spacer()
+            AccentPickerRow(selection: accentBinding)
+                .fixedSize()
         }
+        .padding(.horizontal, Theme.Spacing.md)
+        .padding(.vertical, Theme.Spacing.sm + 4)
+        .frame(minHeight: 44)
     }
 
     private var aboutSection: some View {
@@ -184,9 +194,10 @@ struct ProfileView: View {
 
 struct AccentPickerRow: View {
     @Binding var selection: AppAccent
+    var size: CGFloat = 26
 
     var body: some View {
-        HStack(spacing: Theme.Spacing.md) {
+        HStack(spacing: Theme.Spacing.sm) {
             ForEach(AppAccent.allCases) { accent in
                 Button {
                     Haptics.selection()
@@ -194,14 +205,14 @@ struct AccentPickerRow: View {
                 } label: {
                     Circle()
                         .fill(accent.color)
-                        .frame(width: 36, height: 36)
+                        .frame(width: size, height: size)
                         .overlay(
                             Circle()
                                 .strokeBorder(
                                     Color.primary.opacity(selection == accent ? 0.9 : 0),
                                     lineWidth: 2
                                 )
-                                .padding(-4)
+                                .padding(-3)
                         )
                         .animation(.spring(duration: 0.25), value: selection)
                 }
@@ -209,7 +220,6 @@ struct AccentPickerRow: View {
                 .accessibilityLabel(accent.label)
                 .accessibilityAddTraits(selection == accent ? .isSelected : [])
             }
-            Spacer(minLength: 0)
         }
     }
 }

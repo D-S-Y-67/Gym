@@ -65,7 +65,7 @@ struct MessageBubble: View {
 
     @ViewBuilder
     private var assistantBackground: some View {
-        Color(.secondarySystemBackground)
+        Theme.Palette.surfaceSubtle
     }
 
     private var textColor: Color {

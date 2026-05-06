@@ -28,7 +28,7 @@ struct GymBroView: View {
                 connectAIEmptyState
             }
         }
-        .background(Color(.systemBackground))
+        .background(Theme.Palette.surfaceBackground)
         .navigationTitle("GymBro")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { toolbarContent }
@@ -199,7 +199,7 @@ private struct SuggestionChip: View {
             .padding(.horizontal, Theme.Spacing.md)
             .padding(.vertical, Theme.Spacing.sm + 2)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(.secondarySystemBackground))
+            .background(Theme.Palette.surfaceSubtle)
             .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous))
         }
         .buttonStyle(.plain)

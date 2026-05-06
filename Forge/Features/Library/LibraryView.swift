@@ -90,7 +90,7 @@ struct LibraryView: View {
             }
             .padding(.bottom, Theme.Spacing.xl)
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Theme.Palette.surfaceBackground)
     }
 
     // MARK: - Pieces
