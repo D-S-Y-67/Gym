@@ -58,6 +58,7 @@ struct WorkoutsHomeView: View {
                 heroBlock
                 VStack(spacing: Theme.Spacing.lg) {
                     routinesSection
+                    bodySection
                     activitySection
                 }
                 .padding(.top, Theme.Spacing.lg)
@@ -405,6 +406,25 @@ struct WorkoutsHomeView: View {
                 }
                 .padding(.horizontal, Theme.Spacing.md)
             }
+        }
+    }
+
+    // MARK: - Body preview
+
+    private var bodySection: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+            SectionHeader("Body", caption: "Heat-mapped from your last 7 days") {
+                Button("Open") {
+                    Haptics.tap()
+                    path.append(.body)
+                }
+                .font(.subheadline.weight(.semibold))
+                .accessibilityLabel("Open body view")
+            }
+            BodyPreviewCard {
+                path.append(.body)
+            }
+            .padding(.horizontal, Theme.Spacing.md)
         }
     }
 

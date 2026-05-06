@@ -9,6 +9,7 @@ enum WorkoutsRoute: Hashable {
     case editRoutine(PersistentIdentifier)
     case workoutDetail(PersistentIdentifier)
     case weeklySchedule
+    case body
 }
 
 /// Routes pushed inside the Library tab.
@@ -88,6 +89,8 @@ struct MainTabView: View {
             }
         case .weeklySchedule:
             WeeklyScheduleView(path: $workoutsPath)
+        case .body:
+            BodyView()
         }
     }
 
