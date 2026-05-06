@@ -50,7 +50,9 @@ targets:
       - path: Forge
     dependencies:
       - package: MarkdownUI
+        product: MarkdownUI
       - package: LaTeXSwiftUI
+        product: LaTeXSwiftUI
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.placeholder.forge
