@@ -15,8 +15,9 @@ enum LibraryRoute: Hashable {
     case exerciseDetail(PersistentIdentifier)
 }
 
-/// Root tab bar. PR 3 ships 4 tabs: Workouts, Library, History, Profile.
-/// Coach and GymBro slot in as their respective PRs land.
+/// Root tab bar. PR 5 ships 5 tabs: Workouts, Library, GymBro, History, Profile.
+/// Coach slots in when PR 6 lands; History will likely fold into Profile then
+/// to keep the tab bar at 5.
 ///
 /// Each tab owns its own `NavigationStack` so paths are independent.
 /// The Workouts tab uses an explicit `[WorkoutsRoute]` so child views
@@ -25,7 +26,7 @@ enum LibraryRoute: Hashable {
 struct MainTabView: View {
 
     enum Tab: Hashable {
-        case workouts, library, history, profile
+        case workouts, library, gymBro, history, profile
     }
 
     @State private var selection: Tab = .workouts
@@ -39,6 +40,7 @@ struct MainTabView: View {
         TabView(selection: $selection) {
             workoutsTab
             libraryTab
+            gymBroTab
             historyTab
             profileTab
         }
@@ -113,6 +115,16 @@ struct MainTabView: View {
         }
         .tabItem { Label("Library", systemImage: "books.vertical") }
         .tag(Tab.library)
+    }
+
+    // MARK: - GymBro
+
+    private var gymBroTab: some View {
+        NavigationStack {
+            GymBroView()
+        }
+        .tabItem { Label("GymBro", systemImage: "bubble.left.and.text.bubble.right") }
+        .tag(Tab.gymBro)
     }
 
     // MARK: - History
