@@ -4,19 +4,16 @@ import Foundation
 /// or model in one place — `QwenService` and any per-feature config builds
 /// on these values.
 ///
-/// Default: Mainland China DashScope OpenAI-compatible endpoint with
-/// `qwen-plus` (balanced quality + cost). To switch:
-/// - International region → set `baseURL` to
-///   `https://dashscope-intl.aliyuncs.com/compatible-mode/v1`
-/// - Bigger model → `qwen3-max-latest`
-/// - Cheaper model → `qwen-turbo`
+/// Default: apiyi.com OpenAI-compatible gateway with the `qwen3.5-flash`
+/// dated snapshot. The `/v1` segment follows the OpenAI convention shared
+/// by apiyi.
 enum AIConfig {
 
     /// OpenAI-compatible chat-completions base URL.
-    static let baseURL = URL(string: "https://dashscope.aliyuncs.com/compatible-mode/v1")!
+    static let baseURL = URL(string: "https://api.apiyi.com/v1")!
 
     /// Default model used when callers don't specify.
-    static let defaultModel = "qwen-plus"
+    static let defaultModel = "qwen3.5-flash-2026-02-23"
 
     /// Path appended to `baseURL` for chat completions.
     static let chatCompletionsPath = "chat/completions"
