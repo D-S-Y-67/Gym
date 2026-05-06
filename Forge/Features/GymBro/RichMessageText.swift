@@ -1,6 +1,6 @@
 import SwiftUI
-import MarkdownUI
-import LaTeXSwiftUI
+@preconcurrency import MarkdownUI
+@preconcurrency import LaTeXSwiftUI
 
 /// Renders an assistant message as mixed markdown + LaTeX.
 ///
@@ -98,7 +98,11 @@ private extension MarkdownUI.Theme {
     /// Theme tuned for the assistant bubble. Picks up `.primary` text color
     /// from the surrounding bubble's `foregroundStyle` and uses a code-block
     /// surface that contrasts inside `.secondarySystemBackground`.
-    static let gymBro = MarkdownUI.Theme()
+    ///
+    /// Computed (not `static let`) so we don't have to prove `Sendable`
+    /// for MarkdownUI's `Theme` — each access constructs a fresh instance.
+    static var gymBro: MarkdownUI.Theme {
+        MarkdownUI.Theme()
         .text {
             ForegroundColor(.primary)
             FontSize(.em(1.0))
@@ -159,6 +163,7 @@ private extension MarkdownUI.Theme {
             ForegroundColor(.accentColor)
             UnderlineStyle(.single)
         }
+    }
 }
 
 private extension Color {
