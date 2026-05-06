@@ -236,28 +236,6 @@ final class PersonalRecord {
     }
 }
 
-@Model
-final class ChatMessage {
-    // Stub kept from PR 1 so the GymBro PR doesn't have to add a new model
-    // type at that time. Fields will be expanded in PR 5.
-    var id: UUID = UUID()
-    var role: String = "user"
-    var content: String = ""
-    var createdAt: Date = Date.now
-
-    init(
-        id: UUID = UUID(),
-        role: String = "user",
-        content: String = "",
-        createdAt: Date = .now
-    ) {
-        self.id = id
-        self.role = role
-        self.content = content
-        self.createdAt = createdAt
-    }
-}
-
 // MARK: - Schema helpers
 
 enum AppSchema {
@@ -270,7 +248,6 @@ enum AppSchema {
         Exercise.self,
         Routine.self,
         RoutineExercise.self,
-        PersonalRecord.self,
-        ChatMessage.self
+        PersonalRecord.self
     ]
 }
