@@ -54,16 +54,21 @@ struct WorkoutsHomeView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: Theme.Spacing.lg) {
-                heroCard
-                routinesSection
-                activitySection
+            VStack(spacing: 0) {
+                heroBlock
+                VStack(spacing: Theme.Spacing.lg) {
+                    routinesSection
+                    activitySection
+                }
+                .padding(.top, Theme.Spacing.lg)
+                .padding(.bottom, Theme.Spacing.lg)
             }
-            .padding(.vertical, Theme.Spacing.lg)
         }
         .background(Theme.Palette.surfaceBackground)
-        .navigationTitle("Workouts")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationTitle("")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.hidden, for: .navigationBar)
+        .ignoresSafeArea(edges: .top)
     }
 
     // MARK: - Hero state
@@ -84,48 +89,94 @@ struct WorkoutsHomeView: View {
         return .unscheduled
     }
 
-    // MARK: - Hero card
+    // MARK: - Hero block (full-bleed)
 
-    private var heroCard: some View {
-        GlassCard(cornerRadius: Theme.Radius.lg, padding: Theme.Spacing.lg) {
-            VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-                heroTopBar
-                heroBody
-                heroCTA
-                Divider()
-                heroStatsRow
-            }
+    /// PR 9: the home tab opens with a full-width colored region instead
+    /// of a card sitting in a stack. ForgeWordmark + huge day numeral +
+    /// scheduled-routine info + gradient CTA + stats row, all on the
+    /// accent gradient. The page below sits visually beneath this hero
+    /// rather than co-equal with it.
+    private var heroBlock: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+            heroTopRow
+            heroDayBlock
+            heroBody
+                .padding(.top, Theme.Spacing.xs)
+            heroCTA
+            heroDivider
+            heroStatsRow
         }
-        .padding(.horizontal, Theme.Spacing.md)
+        .foregroundStyle(.white)
+        .padding(.horizontal, Theme.Spacing.lg)
+        .padding(.top, Theme.Spacing.xxl + Theme.Spacing.md)
+        .padding(.bottom, Theme.Spacing.lg)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            Theme.Palette.heroGradient(.accentColor)
+        )
+        .clipShape(
+            UnevenRoundedRectangle(
+                bottomLeadingRadius: Theme.Radius.lg + 6,
+                bottomTrailingRadius: Theme.Radius.lg + 6,
+                style: .continuous
+            )
+        )
     }
 
-    private var heroTopBar: some View {
-        HStack(alignment: .firstTextBaseline) {
-            Theme.Typo.eyebrow(heroEyebrowText)
+    private var heroTopRow: some View {
+        HStack(alignment: .center) {
+            ForgeWordmark(size: 16)
+                .foregroundStyle(.white)
             Spacer()
             if !weekPRs.isEmpty {
-                prPill
+                heroPRPill
             }
         }
     }
 
-    private var heroEyebrowText: String {
-        Date.now.formatted(.dateTime.weekday(.wide).month(.abbreviated).day())
-    }
-
-    private var prPill: some View {
+    private var heroPRPill: some View {
         HStack(spacing: 4) {
             Image(systemName: "trophy.fill")
                 .font(.caption2)
             Text("+\(weekPRs.count) THIS WEEK")
-                .font(.caption2.weight(.bold))
-                .tracking(0.6)
+                .font(.caption2.weight(.heavy))
+                .tracking(0.8)
         }
         .padding(.horizontal, Theme.Spacing.sm)
-        .padding(.vertical, 4)
-        .foregroundStyle(.tint)
-        .background(Color.accentColor.opacity(0.15), in: Capsule())
+        .padding(.vertical, 5)
+        .foregroundStyle(.white)
+        .background(.white.opacity(0.18), in: Capsule())
+        .overlay(Capsule().strokeBorder(.white.opacity(0.25), lineWidth: 1))
         .accessibilityLabel("\(weekPRs.count) personal record\(weekPRs.count == 1 ? "" : "s") this week")
+    }
+
+    private var heroDayBlock: some View {
+        VStack(alignment: .leading, spacing: -4) {
+            Text(Date.now.formatted(.dateTime.weekday(.wide)).uppercased())
+                .font(.caption.weight(.heavy))
+                .tracking(2)
+                .foregroundStyle(.white.opacity(0.8))
+            HStack(alignment: .firstTextBaseline, spacing: Theme.Spacing.sm) {
+                Theme.Typo.heroNumeral(Date.now.formatted(.dateTime.day()))
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(Date.now.formatted(.dateTime.month(.wide)).uppercased())
+                        .font(.subheadline.weight(.heavy))
+                        .tracking(1.5)
+                    Text(Date.now.formatted(.dateTime.year()))
+                        .font(.footnote.weight(.medium))
+                        .foregroundStyle(.white.opacity(0.7))
+                        .monospacedDigit()
+                }
+                .padding(.bottom, 12)
+                Spacer()
+            }
+        }
+    }
+
+    private var heroDivider: some View {
+        Rectangle()
+            .fill(.white.opacity(0.22))
+            .frame(height: 1)
     }
 
     @ViewBuilder
@@ -134,30 +185,30 @@ struct WorkoutsHomeView: View {
         case .active(let workout):
             VStack(alignment: .leading, spacing: 4) {
                 Text(workout.name.isEmpty ? "Workout in progress" : workout.name)
-                    .font(.title.weight(.bold))
+                    .font(.title2.weight(.bold))
                 TimelineView(.periodic(from: workout.startedAt, by: 1)) { context in
                     Text("\(durationString(workout.duration(asOf: context.date))) · \(workout.totalCompletedSets) sets logged")
                         .font(.subheadline.monospacedDigit())
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.white.opacity(0.78))
                 }
             }
         case .scheduled(let routine):
             VStack(alignment: .leading, spacing: 4) {
                 Text(routine.name.isEmpty ? "Untitled routine" : routine.name)
-                    .font(.title.weight(.bold))
+                    .font(.title2.weight(.bold))
                 Text(scheduledSubtitle(for: routine))
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white.opacity(0.78))
             }
         case .unscheduled:
             VStack(alignment: .leading, spacing: 4) {
                 Text("No workout planned")
-                    .font(.title.weight(.bold))
+                    .font(.title2.weight(.bold))
                 Text(hasAnySchedule
                     ? "Today's a rest day — or freestyle below."
                     : "Plan your week to get a heads-up each morning.")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white.opacity(0.78))
             }
         }
     }
@@ -195,7 +246,8 @@ struct WorkoutsHomeView: View {
                     } label: {
                         Text("Plan your week →")
                             .font(.footnote.weight(.semibold))
-                            .foregroundStyle(.tint)
+                            .foregroundStyle(.white.opacity(0.9))
+                            .padding(.top, 2)
                     }
                     .accessibilityLabel("Plan your week")
                 } else {
@@ -205,13 +257,16 @@ struct WorkoutsHomeView: View {
                     } label: {
                         Text("View week →")
                             .font(.footnote.weight(.semibold))
-                            .foregroundStyle(.tint)
+                            .foregroundStyle(.white.opacity(0.9))
+                            .padding(.top, 2)
                     }
                 }
             }
         }
     }
 
+    /// On the colored hero, accent-on-accent disappears. Inverse the
+    /// button: white pill with accent text. Lifts cleanly off the gradient.
     private func gradientButton(title: String, icon: String, action: @escaping () -> Void) -> some View {
         Button {
             action()
@@ -219,14 +274,11 @@ struct WorkoutsHomeView: View {
             HStack(spacing: Theme.Spacing.sm) {
                 Image(systemName: icon)
                 Text(title)
-                    .fontWeight(.semibold)
+                    .fontWeight(.bold)
             }
-            .foregroundStyle(.white)
-            .frame(maxWidth: .infinity, minHeight: 48)
-            .background(
-                Theme.Palette.accentGradient(.accentColor),
-                in: RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous)
-            )
+            .foregroundStyle(Color.accentColor)
+            .frame(maxWidth: .infinity, minHeight: 50)
+            .background(.white, in: RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -235,30 +287,39 @@ struct WorkoutsHomeView: View {
 
     private var heroStatsRow: some View {
         HStack(alignment: .top, spacing: 0) {
-            statColumn(
+            heroStatColumn(
                 value: "\(monthlyWorkouts.count)",
                 label: "30-DAY"
             )
-            Divider().frame(height: 36)
-            statColumn(
+            heroStatDivider
+            heroStatColumn(
                 value: formatVolume(monthlyWorkouts.reduce(0) { $0 + $1.totalVolume }),
                 label: "VOLUME"
             )
-            Divider().frame(height: 36)
-            statColumn(
+            heroStatDivider
+            heroStatColumn(
                 value: "\(weekPRs.count)",
                 label: "WEEK PR"
             )
         }
     }
 
-    private func statColumn(value: String, label: String) -> some View {
-        VStack(spacing: 4) {
-            Theme.Typo.displayNumeral(value, size: 22)
-                .foregroundStyle(.primary)
-            Theme.Typo.eyebrow(label)
+    private func heroStatColumn(value: String, label: String) -> some View {
+        VStack(spacing: 6) {
+            Theme.Typo.displayNumeral(value, size: 28)
+                .foregroundStyle(.white)
+            Text(label)
+                .font(.caption2.weight(.heavy))
+                .tracking(1.2)
+                .foregroundStyle(.white.opacity(0.7))
         }
         .frame(maxWidth: .infinity)
+    }
+
+    private var heroStatDivider: some View {
+        Rectangle()
+            .fill(.white.opacity(0.22))
+            .frame(width: 1, height: 36)
     }
 
     // MARK: - Routines section
@@ -354,12 +415,19 @@ struct WorkoutsHomeView: View {
             SectionHeader("Activity")
             if finishedWorkouts.isEmpty {
                 GlassCard {
-                    EmptyStateView(
-                        symbol: "figure.run",
-                        title: "No workouts yet",
-                        message: "Your first session goes here."
-                    )
-                    .frame(minHeight: 140)
+                    VStack(spacing: Theme.Spacing.md) {
+                        ForgeMark(size: 36)
+                            .foregroundStyle(.tertiary)
+                        VStack(spacing: 4) {
+                            Text("No workouts yet")
+                                .font(.headline)
+                            Text("Your first session goes here.")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Theme.Spacing.md)
                 }
                 .padding(.horizontal, Theme.Spacing.md)
             } else if let last = finishedWorkouts.first {

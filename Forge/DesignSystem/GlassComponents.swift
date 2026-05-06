@@ -316,3 +316,54 @@ extension AppListRow where Trailing == EmptyView {
         )
     }
 }
+
+// MARK: - ForgeMark
+
+/// Forge's signature mark — a stylized barbell drawn in SwiftUI shapes.
+/// Two plates connected by a bar. Used on empty states, the Profile
+/// "About" row, and the hero block to give the app an identity beyond
+/// SF Symbols. Renders crisp at any size; foreground style follows the
+/// surrounding `.foregroundStyle`.
+struct ForgeMark: View {
+    var size: CGFloat = 28
+
+    private var plateSize: CGFloat { size }
+    private var plateInner: CGFloat { size * 0.5 }
+    private var barWidth: CGFloat { size * 1.4 }
+    private var barHeight: CGFloat { size * 0.18 }
+
+    var body: some View {
+        HStack(spacing: 0) {
+            plate
+            bar
+            plate
+        }
+        .frame(height: plateSize)
+        .accessibilityHidden(true)
+    }
+
+    private var plate: some View {
+        Capsule()
+            .frame(width: plateSize * 0.42, height: plateSize)
+    }
+
+    private var bar: some View {
+        Rectangle()
+            .frame(width: barWidth - plateSize * 0.84, height: barHeight)
+    }
+}
+
+/// `ForgeMark` paired with the "FORGE" wordmark in tracked-out caps.
+/// Used in the Workouts hero so the brand is asserted once per session.
+struct ForgeWordmark: View {
+    var size: CGFloat = 18
+
+    var body: some View {
+        HStack(spacing: 8) {
+            ForgeMark(size: size)
+            Text("FORGE")
+                .font(.system(size: size * 0.72, weight: .black, design: .rounded))
+                .tracking(2.5)
+        }
+    }
+}

@@ -11,7 +11,7 @@ enum ProfileRoute: Hashable {
 struct ProfileView: View {
 
     @AppStorage(AppAccent.storageKey)
-    private var accentRaw: String = AppAccent.blue.rawValue
+    private var accentRaw: String = AppAccent.ember.rawValue
 
     @State private var showingKeySheet = false
     @State private var hasStoredKey: Bool = KeychainService.hasKey()
@@ -19,7 +19,7 @@ struct ProfileView: View {
     @Environment(\.modelContext) private var modelContext
 
     private var accent: AppAccent {
-        AppAccent(rawValue: accentRaw) ?? .blue
+        AppAccent(rawValue: accentRaw) ?? .ember
     }
 
     private var accentBinding: Binding<AppAccent> {
@@ -163,22 +163,22 @@ struct ProfileView: View {
     private var aboutSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
             SectionHeader("About")
-            GlassCard(padding: 0) {
-                VStack(spacing: 0) {
-                    AppListRow(
-                        icon: "info.circle",
-                        title: "Version",
-                        subtitle: appVersionString,
-                        trailing: { EmptyView() }
-                    )
-                    Divider().padding(.leading, 56)
-                    AppListRow(
-                        icon: "heart",
-                        title: "Built for serious lifters",
-                        subtitle: "Workouts, AI coach, weekly schedule — all on device."
-                    )
+            GlassCard {
+                VStack(spacing: Theme.Spacing.md) {
+                    HStack(spacing: Theme.Spacing.md) {
+                        ForgeWordmark(size: 22)
+                            .foregroundStyle(.tint)
+                        Spacer()
+                        Text(appVersionString)
+                            .font(.footnote.monospacedDigit())
+                            .foregroundStyle(.secondary)
+                    }
+                    Divider()
+                    Text("Workouts, AI coach, weekly schedule — all on device. Built for serious lifters.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .padding(.vertical, Theme.Spacing.xs)
             }
             .padding(.horizontal, Theme.Spacing.md)
         }

@@ -5,7 +5,7 @@ import SwiftData
 struct ForgeApp: App {
 
     @AppStorage(AppAccent.storageKey)
-    private var accentRaw: String = AppAccent.blue.rawValue
+    private var accentRaw: String = AppAccent.ember.rawValue
 
     @State private var session: WorkoutSessionStore
     @State private var restTimer = RestTimer()
@@ -13,7 +13,7 @@ struct ForgeApp: App {
     private let container: ModelContainer
 
     private var accent: AppAccent {
-        AppAccent(rawValue: accentRaw) ?? .blue
+        AppAccent(rawValue: accentRaw) ?? .ember
     }
 
     init() {

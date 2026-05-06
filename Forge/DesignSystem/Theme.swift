@@ -68,6 +68,21 @@ enum Theme {
                 endPoint: .bottomTrailing
             )
         }
+
+        /// Richer gradient used by the full-bleed home hero. Goes from the
+        /// raw accent at top to a darker bottom edge so the page below
+        /// reads as "tucked under" the hero rather than co-equal with it.
+        static func heroGradient(_ accent: Color) -> LinearGradient {
+            LinearGradient(
+                stops: [
+                    .init(color: accent, location: 0),
+                    .init(color: accent.opacity(0.92), location: 0.55),
+                    .init(color: accent.opacity(0.72), location: 1)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        }
     }
 
     /// Reusable typographic moments. The "eyebrow" gives section headers a
@@ -85,6 +100,17 @@ enum Theme {
             Text(text)
                 .font(.system(size: size, weight: .bold, design: .rounded))
                 .monospacedDigit()
+        }
+
+        /// The big hero day number on the Workouts home (e.g. "06").
+        /// Rounded, very heavy, monospaced so it stays steady at the
+        /// minute mark.
+        static func heroNumeral(_ text: String) -> some View {
+            Text(text)
+                .font(.system(size: 88, weight: .black, design: .rounded))
+                .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
         }
     }
 }
