@@ -29,15 +29,27 @@ struct MessageBubble: View {
                 .background(assistantBackground)
                 .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.lg, style: .continuous))
         } else {
-            Text(message.content)
+            content
                 .font(.body)
                 .foregroundStyle(textColor)
-                .textSelection(.enabled)
                 .padding(.horizontal, Theme.Spacing.md)
                 .padding(.vertical, Theme.Spacing.sm + 2)
                 .background(background)
                 .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.lg, style: .continuous))
                 .accessibilityLabel(accessibilityLabel)
+        }
+    }
+
+    /// Plain text for user messages (their own input doesn't need rich
+    /// rendering); markdown + LaTeX for assistant replies.
+    @ViewBuilder
+    private var content: some View {
+        switch message.role {
+        case .user:
+            Text(message.content)
+                .textSelection(.enabled)
+        case .assistant:
+            RichMessageText(content: message.content)
         }
     }
 
