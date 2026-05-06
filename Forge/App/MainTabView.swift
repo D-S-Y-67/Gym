@@ -16,9 +16,8 @@ enum LibraryRoute: Hashable {
     case exerciseDetail(PersistentIdentifier)
 }
 
-/// Root tab bar. PR 5 ships 5 tabs: Workouts, Library, GymBro, History, Profile.
-/// Coach slots in when PR 6 lands; History will likely fold into Profile then
-/// to keep the tab bar at 5.
+/// Root tab bar. PR 7 ships 5 tabs: Workouts, Library, GymBro, Coach, Profile.
+/// History folded into Profile to keep the tab bar at five with Coach added.
 ///
 /// Each tab owns its own `NavigationStack` so paths are independent.
 /// The Workouts tab uses an explicit `[WorkoutsRoute]` so child views
@@ -27,13 +26,13 @@ enum LibraryRoute: Hashable {
 struct MainTabView: View {
 
     enum Tab: Hashable {
-        case workouts, library, gymBro, history, profile
+        case workouts, library, gymBro, coach, profile
     }
 
     @State private var selection: Tab = .workouts
     @State private var workoutsPath: [WorkoutsRoute] = []
     @State private var libraryPath: [LibraryRoute] = []
-    @State private var historyPath = NavigationPath()
+    @State private var profilePath = NavigationPath()
 
     @Environment(\.modelContext) private var modelContext
 
@@ -42,7 +41,7 @@ struct MainTabView: View {
             workoutsTab
             libraryTab
             gymBroTab
-            historyTab
+            coachTab
             profileTab
         }
     }
@@ -130,31 +129,20 @@ struct MainTabView: View {
         .tag(Tab.gymBro)
     }
 
-    // MARK: - History
+    // MARK: - Coach
 
-    private var historyTab: some View {
-        NavigationStack(path: $historyPath) {
-            HistoryListView()
-                .navigationDestination(for: PersistentIdentifier.self) { id in
-                    if let workout = modelContext.model(for: id) as? Workout {
-                        WorkoutDetailView(workout: workout)
-                    } else {
-                        EmptyStateView(
-                            symbol: "exclamationmark.triangle",
-                            title: "Workout missing",
-                            message: "It may have been deleted."
-                        )
-                    }
-                }
+    private var coachTab: some View {
+        NavigationStack {
+            CoachView()
         }
-        .tabItem { Label("History", systemImage: "clock.arrow.circlepath") }
-        .tag(Tab.history)
+        .tabItem { Label("Coach", systemImage: "figure.strengthtraining.traditional") }
+        .tag(Tab.coach)
     }
 
     // MARK: - Profile
 
     private var profileTab: some View {
-        NavigationStack {
+        NavigationStack(path: $profilePath) {
             ProfileView()
         }
         .tabItem { Label("Profile", systemImage: "person") }

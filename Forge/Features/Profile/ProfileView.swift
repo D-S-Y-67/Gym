@@ -1,4 +1,12 @@
 import SwiftUI
+import SwiftData
+
+/// Routes pushed from the Profile tab. History lives here in PR 7 to keep
+/// the tab bar at five (Workouts, Library, GymBro, Coach, Profile).
+enum ProfileRoute: Hashable {
+    case history
+    case workoutDetail(PersistentIdentifier)
+}
 
 struct ProfileView: View {
 
@@ -7,6 +15,8 @@ struct ProfileView: View {
 
     @State private var showingKeySheet = false
     @State private var hasStoredKey: Bool = KeychainService.hasKey()
+
+    @Environment(\.modelContext) private var modelContext
 
     private var accent: AppAccent {
         AppAccent(rawValue: accentRaw) ?? .blue
@@ -22,6 +32,7 @@ struct ProfileView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: Theme.Spacing.lg) {
+                historySection
                 appearanceSection
                 aiSection
                 aboutSection
@@ -38,6 +49,66 @@ struct ProfileView: View {
             if !isPresented {
                 hasStoredKey = KeychainService.hasKey()
             }
+        }
+        .navigationDestination(for: ProfileRoute.self) { route in
+            switch route {
+            case .history:
+                HistoryListView()
+            case .workoutDetail(let id):
+                workoutDetailDestination(id: id)
+            }
+        }
+        .navigationDestination(for: PersistentIdentifier.self) { id in
+            workoutDetailDestination(id: id)
+        }
+    }
+
+    @ViewBuilder
+    private func workoutDetailDestination(id: PersistentIdentifier) -> some View {
+        if let workout = modelContext.model(for: id) as? Workout {
+            WorkoutDetailView(workout: workout)
+        } else {
+            EmptyStateView(
+                symbol: "exclamationmark.triangle",
+                title: "Workout missing",
+                message: "It may have been deleted."
+            )
+        }
+    }
+
+    private var historySection: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+            SectionHeader("History")
+            GlassCard(padding: 0) {
+                NavigationLink(value: ProfileRoute.history) {
+                    HStack(spacing: Theme.Spacing.md) {
+                        Image(systemName: "clock.arrow.circlepath")
+                            .font(.title3)
+                            .foregroundStyle(.tint)
+                            .frame(width: 28, height: 28)
+                            .accessibilityHidden(true)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Workout history")
+                                .foregroundStyle(.primary)
+                            Text("Every session you've logged")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer(minLength: 0)
+                        Image(systemName: "chevron.right")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .accessibilityHidden(true)
+                    }
+                    .padding(.horizontal, Theme.Spacing.md)
+                    .padding(.vertical, Theme.Spacing.sm + 4)
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .padding(.vertical, Theme.Spacing.xs)
+            }
+            .padding(.horizontal, Theme.Spacing.md)
         }
     }
 
@@ -94,7 +165,7 @@ struct ProfileView: View {
                     AppListRow(
                         icon: "heart",
                         title: "Built for serious lifters",
-                        subtitle: "AI features arrive in the next update."
+                        subtitle: "Workouts, AI coach, weekly schedule — all on device."
                     )
                 }
                 .padding(.vertical, Theme.Spacing.xs)
