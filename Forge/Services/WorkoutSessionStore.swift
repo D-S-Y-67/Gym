@@ -75,6 +75,14 @@ final class WorkoutSessionStore {
         workout.endedAt = .now
         try? context.save()
         active = nil
+        // PR 13: optionally push to Apple Health. Reads the toggle from
+        // UserDefaults at finish time (no observation needed). Fire-and-
+        // forget — local save is unaffected if HK fails.
+        if UserDefaults.standard.bool(forKey: "healthKitEnabled") {
+            Task { @MainActor in
+                await HealthKitService.shared.saveWorkout(workout)
+            }
+        }
         return workout
     }
 

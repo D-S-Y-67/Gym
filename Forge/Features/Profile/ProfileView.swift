@@ -16,6 +16,9 @@ struct ProfileView: View {
     @State private var showingKeySheet = false
     @State private var hasStoredKey: Bool = KeychainService.hasKey()
 
+    @AppStorage("healthKitEnabled") private var healthKitEnabled: Bool = false
+    @State private var healthAuthFailed: Bool = false
+
     @Environment(\.modelContext) private var modelContext
 
     private var accent: AppAccent {
@@ -134,11 +137,72 @@ struct ProfileView: View {
                         action: { showingKeySheet = true }
                     )
                     Divider().padding(.leading, 56)
+                    healthRow
+                    Divider().padding(.leading, 56)
                     accentRow
                 }
                 .padding(.vertical, Theme.Spacing.xs)
             }
             .padding(.horizontal, Theme.Spacing.md)
+        }
+    }
+
+    private var healthRow: some View {
+        HStack(spacing: Theme.Spacing.md) {
+            Image(systemName: "heart.fill")
+                .font(.title3)
+                .foregroundStyle(.tint)
+                .frame(width: 28, height: 28)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Apple Health")
+                    .foregroundStyle(.primary)
+                Text(healthSubtitle)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Toggle("", isOn: $healthKitEnabled)
+                .labelsHidden()
+                .tint(.accentColor)
+                .onChange(of: healthKitEnabled) { _, isOn in
+                    if isOn {
+                        Task { await requestHealthAuth() }
+                    } else {
+                        healthAuthFailed = false
+                    }
+                }
+        }
+        .padding(.horizontal, Theme.Spacing.md)
+        .padding(.vertical, Theme.Spacing.sm + 4)
+        .frame(minHeight: 44)
+    }
+
+    private var healthSubtitle: String {
+        if !HealthKitService.shared.isAvailable {
+            return "Not available on this device"
+        }
+        if healthAuthFailed {
+            return "Permission denied — enable in iOS Settings"
+        }
+        return healthKitEnabled
+            ? "Saving workouts to Health"
+            : "Save workouts to Health and credit your rings"
+    }
+
+    @MainActor
+    private func requestHealthAuth() async {
+        do {
+            let granted = try await HealthKitService.shared.requestAuthorization()
+            if !granted {
+                healthAuthFailed = true
+                healthKitEnabled = false
+            } else {
+                healthAuthFailed = false
+            }
+        } catch {
+            healthAuthFailed = true
+            healthKitEnabled = false
         }
     }
 
