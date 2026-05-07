@@ -91,10 +91,15 @@ struct InsightsView: View {
 
     private var heroBlock: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-            Text("INSIGHTS")
-                .font(.caption.weight(.heavy))
-                .tracking(2.4)
-                .foregroundStyle(.white.opacity(0.85))
+            HStack {
+                ForgeWordmark(size: 16)
+                    .foregroundStyle(.white)
+                Spacer()
+                Text("INSIGHTS")
+                    .font(.caption.weight(.heavy))
+                    .tracking(2.4)
+                    .foregroundStyle(.white.opacity(0.85))
+            }
 
             HStack(alignment: .firstTextBaseline, spacing: Theme.Spacing.sm) {
                 Theme.Typo.heroNumeral("\(weeksActive)")

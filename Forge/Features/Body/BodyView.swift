@@ -150,15 +150,20 @@ struct BodyView: View {
 
     private var heroBlock: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-            Text("BODY")
-                .font(.caption.weight(.heavy))
-                .tracking(2.4)
-                .foregroundStyle(.white.opacity(0.85))
+            HStack {
+                ForgeWordmark(size: 16)
+                    .foregroundStyle(.white)
+                Spacer()
+                Text("BODY")
+                    .font(.caption.weight(.heavy))
+                    .tracking(2.4)
+                    .foregroundStyle(.white.opacity(0.85))
+            }
 
             HStack(alignment: .firstTextBaseline, spacing: Theme.Spacing.sm) {
                 Theme.Typo.heroNumeral(formatVolume(volumeMap.total))
                     .foregroundStyle(.white)
-                Text("LB")
+                Text("lb")
                     .font(.title3.weight(.heavy))
                     .tracking(1.5)
                     .foregroundStyle(.white.opacity(0.7))

@@ -22,9 +22,10 @@ struct RoutinesListView: View {
                 EmptyStateView(
                     symbol: "list.bullet.rectangle.portrait",
                     title: "No routines yet",
-                    message: "Save a workout template to start sessions faster.",
-                    cta: .init(title: "New Routine", systemImage: "plus") {
-                        createNew()
+                    message: "Pick a starter program or build your own.",
+                    cta: .init(title: "Browse Starter Programs", systemImage: "square.grid.2x2.fill") {
+                        Haptics.tap()
+                        path.append(.programs)
                     }
                 )
             } else {

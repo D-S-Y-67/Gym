@@ -112,6 +112,17 @@ enum Theme {
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
         }
+
+        /// Non-numeric large rounded display text used by hero headlines
+        /// that aren't numerals (AIHub "Two coaches.", Onboarding tagline,
+        /// StarterPrograms title). Centralized so all heroes share size +
+        /// weight + design without scattering raw `.system(size:)` calls.
+        static func heroHeadline(_ text: String, size: CGFloat = 44) -> some View {
+            Text(text)
+                .font(.system(size: size, weight: .black, design: .rounded))
+                .lineLimit(2)
+                .minimumScaleFactor(0.6)
+        }
     }
 }
 

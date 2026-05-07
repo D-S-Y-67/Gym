@@ -75,11 +75,9 @@ struct AIHubView: View {
             }
 
             VStack(alignment: .leading, spacing: -2) {
-                Text("Two coaches.")
-                    .font(.system(size: 36, weight: .black, design: .rounded))
+                Theme.Typo.heroHeadline("Two coaches.", size: 36)
                     .foregroundStyle(.white)
-                Text("One barbell.")
-                    .font(.system(size: 36, weight: .black, design: .rounded))
+                Theme.Typo.heroHeadline("One barbell.", size: 36)
                     .foregroundStyle(.white.opacity(0.78))
             }
 

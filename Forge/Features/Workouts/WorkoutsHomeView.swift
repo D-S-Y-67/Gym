@@ -398,6 +398,12 @@ struct WorkoutsHomeView: View {
                         .font(.subheadline.weight(.semibold))
                         .accessibilityLabel("View week")
                     }
+                    Button("Programs") {
+                        Haptics.tap()
+                        path.append(.programs)
+                    }
+                    .font(.subheadline.weight(.semibold))
+                    .accessibilityLabel("Browse starter programs")
                     Button("Manage") {
                         Haptics.tap()
                         path.append(.routines)
@@ -408,23 +414,49 @@ struct WorkoutsHomeView: View {
             }
 
             if routines.isEmpty {
-                GlassCard {
-                    Button {
-                        createNewRoutine()
-                    } label: {
-                        HStack {
-                            Image(systemName: "plus.circle")
-                            Text("Create your first routine")
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.footnote.weight(.semibold))
-                                .foregroundStyle(.secondary)
+                GlassCard(padding: 0) {
+                    VStack(spacing: 0) {
+                        Button {
+                            Haptics.tap()
+                            path.append(.programs)
+                        } label: {
+                            HStack {
+                                Image(systemName: "square.grid.2x2.fill")
+                                Text("Browse starter programs")
+                                    .fontWeight(.semibold)
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.footnote.weight(.semibold))
+                                    .foregroundStyle(.secondary)
+                            }
+                            .foregroundStyle(.tint)
+                            .padding(.horizontal, Theme.Spacing.md)
+                            .padding(.vertical, Theme.Spacing.sm + 4)
+                            .frame(minHeight: 44)
+                            .contentShape(Rectangle())
                         }
-                        .foregroundStyle(.tint)
-                        .padding(.vertical, 4)
-                        .contentShape(Rectangle())
+                        .buttonStyle(.plain)
+                        Divider().padding(.leading, Theme.Spacing.md)
+                        Button {
+                            createNewRoutine()
+                        } label: {
+                            HStack {
+                                Image(systemName: "plus.circle")
+                                Text("Create your own")
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.footnote.weight(.semibold))
+                                    .foregroundStyle(.secondary)
+                            }
+                            .foregroundStyle(.primary)
+                            .padding(.horizontal, Theme.Spacing.md)
+                            .padding(.vertical, Theme.Spacing.sm + 4)
+                            .frame(minHeight: 44)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
+                    .padding(.vertical, Theme.Spacing.xs)
                 }
                 .padding(.horizontal, Theme.Spacing.md)
             } else {
@@ -689,14 +721,20 @@ private struct LibraryBodyPartCard: View {
     var body: some View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(Theme.Palette.accentGradient(.accentColor))
-                    Image(systemName: symbolName)
-                        .font(.system(size: 28, weight: .semibold))
-                        .foregroundStyle(.white)
+                ZStack(alignment: .topTrailing) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(Theme.Palette.accentGradient(.accentColor))
+                        Image(systemName: symbolName)
+                            .font(.system(size: 28, weight: .semibold))
+                            .foregroundStyle(.white)
+                    }
+                    .frame(width: 60, height: 60)
+                    Image(systemName: "chevron.right")
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(.white.opacity(0.85))
+                        .padding(6)
                 }
-                .frame(width: 60, height: 60)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(bodyPart)

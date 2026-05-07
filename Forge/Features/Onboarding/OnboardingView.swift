@@ -65,11 +65,8 @@ struct OnboardingView: View {
             }
 
             VStack(spacing: Theme.Spacing.sm) {
-                Text("Built to lift.")
-                    .font(.system(size: 56, weight: .black, design: .rounded))
+                Theme.Typo.heroHeadline("Built to lift.", size: 56)
                     .foregroundStyle(.white)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.6)
                 Text("Workouts, weekly schedule, AI coach.\nAll on device.")
                     .font(.title3)
                     .foregroundStyle(.white.opacity(0.82))
@@ -98,8 +95,7 @@ struct OnboardingView: View {
                     .font(.caption.weight(.heavy))
                     .tracking(2.4)
                     .foregroundStyle(.white.opacity(0.85))
-                Text("One barbell.")
-                    .font(.system(size: 44, weight: .black, design: .rounded))
+                Theme.Typo.heroHeadline("One barbell.")
                     .foregroundStyle(.white)
             }
             .padding(.horizontal, Theme.Spacing.lg)
@@ -203,8 +199,7 @@ struct OnboardingView: View {
                     .font(.caption.weight(.heavy))
                     .tracking(2.4)
                     .foregroundStyle(.white.opacity(0.85))
-                Text("Three taps.\nThat's it.")
-                    .font(.system(size: 44, weight: .black, design: .rounded))
+                Theme.Typo.heroHeadline("Three taps.\nThat's it.")
                     .foregroundStyle(.white)
             }
             .padding(.horizontal, Theme.Spacing.lg)
@@ -281,7 +276,7 @@ struct OnboardingView: View {
     }
 
     private func advance() {
-        withAnimation(.spring(duration: 0.4)) {
+        withAnimation(.spring(duration: 0.25)) {
             page += 1
         }
     }
