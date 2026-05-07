@@ -32,6 +32,9 @@ enum CoachContext {
         sections.append(weeklyScheduleSection(routines: routines))
         if !workouts.isEmpty {
             sections.append(recentWorkoutsSection(workouts))
+            if let trend = recentTrendSection(workouts) {
+                sections.append(trend)
+            }
         }
         if !prs.isEmpty {
             sections.append(recentPRsSection(prs))
@@ -100,6 +103,35 @@ enum CoachContext {
             return "- \(date) — \(name) · \(durMin)m · \(sets) sets · \(volume) lb\(exerciseHint)"
         }
         return "## Recent workouts (last \(workoutWindowDays) days)\n" + lines.joined(separator: "\n")
+    }
+
+    /// Last 4 weeks of total completed-set volume, oldest → newest. Lets the
+    /// Coach comment on momentum ("you're up 18% on bench" etc.) without
+    /// new UI surface. Returns nil when every week is zero — no signal.
+    private static func recentTrendSection(_ workouts: [Workout]) -> String? {
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: .now)
+        let weekVolumes: [(label: String, volume: Double)] = (0..<4).reversed().map { offset -> (String, Double) in
+            let weekEnd = cal.date(byAdding: .day, value: -7 * offset, to: today) ?? today
+            let weekStart = cal.date(byAdding: .day, value: -7, to: weekEnd) ?? today
+            let inWeek = workouts.filter { $0.startedAt >= weekStart && $0.startedAt < weekEnd }
+            let volume = inWeek
+                .flatMap { $0.exercises }
+                .flatMap { $0.sets }
+                .filter { $0.isCompleted }
+                .reduce(0.0) { $0 + ($1.weight * Double($1.reps)) }
+            let label: String
+            switch offset {
+            case 0: label = "this week"
+            case 1: label = "1w ago"
+            case 2: label = "2w ago"
+            default: label = "3w ago"
+            }
+            return (label, volume)
+        }
+        guard weekVolumes.contains(where: { $0.volume > 0 }) else { return nil }
+        let lines = weekVolumes.map { "- \($0.label): \(Int($0.volume.rounded())) lb" }
+        return "## Recent volume trend (last 4 weeks)\n" + lines.joined(separator: "\n")
     }
 
     private static func recentPRsSection(_ prs: [PersonalRecord]) -> String {

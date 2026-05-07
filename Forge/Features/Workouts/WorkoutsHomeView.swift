@@ -331,23 +331,39 @@ struct WorkoutsHomeView: View {
         .accessibilityLabel(title)
     }
 
+    /// PR 14: tappable. Opens InsightsView for trend charts and the
+    /// workout heatmap. The chevron at the end signals this; the white
+    /// gradient highlight on press is the buttonStyle's responsibility.
     private var heroStatsRow: some View {
-        HStack(alignment: .top, spacing: 0) {
-            heroStatColumn(
-                value: "\(monthlyWorkouts.count)",
-                label: "30-DAY"
-            )
-            heroStatDivider
-            heroStatColumn(
-                value: formatVolume(monthlyWorkouts.reduce(0) { $0 + $1.totalVolume }),
-                label: "VOLUME"
-            )
-            heroStatDivider
-            heroStatColumn(
-                value: "\(weekPRs.count)",
-                label: "WEEK PR"
-            )
+        Button {
+            Haptics.tap()
+            path.append(.insights)
+        } label: {
+            HStack(alignment: .top, spacing: 0) {
+                heroStatColumn(
+                    value: "\(monthlyWorkouts.count)",
+                    label: "30-DAY"
+                )
+                heroStatDivider
+                heroStatColumn(
+                    value: formatVolume(monthlyWorkouts.reduce(0) { $0 + $1.totalVolume }),
+                    label: "VOLUME"
+                )
+                heroStatDivider
+                heroStatColumn(
+                    value: "\(weekPRs.count)",
+                    label: "WEEK PR"
+                )
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.white.opacity(0.6))
+                    .padding(.leading, 4)
+                    .padding(.top, 8)
+            }
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Open insights")
     }
 
     private func heroStatColumn(value: String, label: String) -> some View {

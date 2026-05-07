@@ -16,6 +16,7 @@ enum WorkoutsRoute: Hashable {
     case body
     case library
     case exerciseDetail(PersistentIdentifier)
+    case insights
 }
 
 /// Root tab bar. PR 11 collapsed five tabs to three: **Home · AI · Profile**.
@@ -92,6 +93,8 @@ struct MainTabView: View {
             WeeklyScheduleView(path: $workoutsPath)
         case .body:
             BodyView()
+        case .insights:
+            InsightsView()
         case .library:
             LibraryView { id in
                 workoutsPath.append(.exerciseDetail(id))
