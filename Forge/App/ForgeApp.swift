@@ -1,0 +1,52 @@
+import SwiftUI
+import SwiftData
+
+@main
+struct ForgeApp: App {
+
+    @AppStorage(AppAccent.storageKey)
+    private var accentRaw: String = AppAccent.ember.rawValue
+
+    @State private var session: WorkoutSessionStore
+    @State private var restTimer = RestTimer()
+
+    private let container: ModelContainer
+
+    private var accent: AppAccent {
+        AppAccent(rawValue: accentRaw) ?? .ember
+    }
+
+    init() {
+        // PR 16: register UserDefaults defaults before anything reads them.
+        // The rest-timer sound is on by default; users can opt out from
+        // Profile → Settings.
+        UserDefaults.standard.register(defaults: [
+            "restTimerSound": true
+        ])
+
+        let container: ModelContainer
+        do {
+            container = try ModelContainer(
+                for: Schema(AppSchema.allModels),
+                configurations: ModelConfiguration()
+            )
+        } catch {
+            fatalError("Failed to initialize SwiftData container: \(error)")
+        }
+        self.container = container
+
+        SeedData.seedIfNeeded(container.mainContext)
+        _session = State(initialValue: WorkoutSessionStore(context: container.mainContext))
+    }
+
+    var body: some Scene {
+        WindowGroup {
+            RootView()
+                .tint(accent.color)
+                .fontDesign(.rounded)
+                .environment(session)
+                .environment(restTimer)
+        }
+        .modelContainer(container)
+    }
+}
