@@ -21,6 +21,8 @@ struct ProfileView: View {
 
     @AppStorage("restTimerSound") private var restTimerSound: Bool = true
 
+    @State private var showingAppIconDesign = false
+
     @Environment(\.modelContext) private var modelContext
 
     private var accent: AppAccent {
@@ -48,6 +50,9 @@ struct ProfileView: View {
         .navigationBarTitleDisplayMode(.large)
         .sheet(isPresented: $showingKeySheet) {
             KeyEntrySheet(hasStoredKey: $hasStoredKey)
+        }
+        .sheet(isPresented: $showingAppIconDesign) {
+            AppIconDesignView()
         }
         .onChange(of: showingKeySheet) { _, isPresented in
             if !isPresented {
@@ -273,6 +278,26 @@ struct ProfileView: View {
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
+                    Divider()
+                    Button {
+                        Haptics.tap()
+                        showingAppIconDesign = true
+                    } label: {
+                        HStack(spacing: Theme.Spacing.sm) {
+                            Image(systemName: "app.gift")
+                                .font(.subheadline)
+                                .foregroundStyle(.tint)
+                            Text("Design app icon")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.tint)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
                 }
             }
             .padding(.horizontal, Theme.Spacing.md)
