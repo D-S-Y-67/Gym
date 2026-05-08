@@ -274,6 +274,28 @@ private struct RoutineExerciseRow: View {
             Stepper("Target sets", value: $item.targetSets, in: 1...10)
                 .labelsHidden()
                 .accessibilityLabel("Target sets")
+            restMenu
         }
+    }
+
+    /// PR 16: tap-to-edit rest pill. Tap → menu of common rest values
+    /// or "Default" (nil → inherit from `Exercise.defaultRestSeconds`).
+    private var restMenu: some View {
+        Menu {
+            Picker("Rest", selection: $item.restSeconds) {
+                Text("Default").tag(Int?.none)
+                ForEach([60, 90, 120, 150, 180, 240, 300], id: \.self) { seconds in
+                    Text("\(seconds)s").tag(Optional(seconds))
+                }
+            }
+        } label: {
+            Text(item.restSeconds.map { "\($0)s" } ?? "—")
+                .font(.caption.weight(.heavy).monospacedDigit())
+                .foregroundStyle(.tint)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.accentColor.opacity(0.12), in: Capsule())
+        }
+        .accessibilityLabel("Rest seconds, currently \(item.restSeconds.map { "\($0)" } ?? "default")")
     }
 }

@@ -48,9 +48,12 @@ final class WorkoutSessionStore {
 
         for (idx, template) in routine.orderedExercises.enumerated() {
             guard let exercise = template.exercise else { continue }
+            // PR 16: prefer the routine's per-exercise override; fall back
+            // to the Exercise's global default if the routine didn't set one.
+            let rest = template.restSeconds ?? exercise.defaultRestSeconds
             let we = WorkoutExercise(
                 exerciseIndex: idx,
-                restSeconds: exercise.defaultRestSeconds,
+                restSeconds: rest,
                 exercise: exercise
             )
             we.parentWorkout = workout

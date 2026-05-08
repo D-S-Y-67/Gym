@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import AudioToolbox
 
 /// Lightweight haptic helpers for use inside button action closures and
 /// non-view contexts. Inside views that already track state changes, prefer
@@ -29,5 +30,15 @@ enum Haptics {
 
     static func error() {
         UINotificationFeedbackGenerator().notificationOccurred(.error)
+    }
+}
+
+/// System-sound feedback. Plays through the iOS ringer pipeline so the
+/// silent switch silences it automatically — pair with a haptic so the
+/// signal still lands when the phone is on silent.
+enum Sounds {
+    /// Short "tink" played when the rest timer hits zero.
+    static func restComplete() {
+        AudioServicesPlaySystemSound(1057)
     }
 }

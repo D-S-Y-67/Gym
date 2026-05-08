@@ -19,6 +19,8 @@ struct ProfileView: View {
     @AppStorage("healthKitEnabled") private var healthKitEnabled: Bool = false
     @State private var healthAuthFailed: Bool = false
 
+    @AppStorage("restTimerSound") private var restTimerSound: Bool = true
+
     @Environment(\.modelContext) private var modelContext
 
     private var accent: AppAccent {
@@ -139,6 +141,8 @@ struct ProfileView: View {
                     Divider().padding(.leading, 56)
                     healthRow
                     Divider().padding(.leading, 56)
+                    restSoundRow
+                    Divider().padding(.leading, 56)
                     accentRow
                 }
                 .padding(.vertical, Theme.Spacing.xs)
@@ -204,6 +208,33 @@ struct ProfileView: View {
             healthAuthFailed = true
             healthKitEnabled = false
         }
+    }
+
+    /// PR 16: rest-timer sound preference. iOS plays the system sound
+    /// through the ringer pipeline, so the silent switch already silences
+    /// it. This toggle is for users who want it off even on ring.
+    private var restSoundRow: some View {
+        HStack(spacing: Theme.Spacing.md) {
+            Image(systemName: "speaker.wave.2.fill")
+                .font(.title3)
+                .foregroundStyle(.tint)
+                .frame(width: 28, height: 28)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Rest timer sound")
+                    .foregroundStyle(.primary)
+                Text("Plays a tink when your rest hits zero")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Toggle("", isOn: $restTimerSound)
+                .labelsHidden()
+                .tint(.accentColor)
+        }
+        .padding(.horizontal, Theme.Spacing.md)
+        .padding(.vertical, Theme.Spacing.sm + 4)
+        .frame(minHeight: 44)
     }
 
     private var accentRow: some View {

@@ -17,6 +17,13 @@ struct ForgeApp: App {
     }
 
     init() {
+        // PR 16: register UserDefaults defaults before anything reads them.
+        // The rest-timer sound is on by default; users can opt out from
+        // Profile → Settings.
+        UserDefaults.standard.register(defaults: [
+            "restTimerSound": true
+        ])
+
         let container: ModelContainer
         do {
             container = try ModelContainer(

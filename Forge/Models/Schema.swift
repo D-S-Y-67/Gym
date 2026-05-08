@@ -205,6 +205,9 @@ final class RoutineExercise {
     var exerciseIndex: Int = 0
     var targetSets: Int = 3
     var targetReps: Int?
+    /// PR 16: per-routine rest override. nil = inherit from
+    /// `Exercise.defaultRestSeconds` at workout-start time.
+    var restSeconds: Int?
     var exercise: Exercise?
     var parentRoutine: Routine?
 
@@ -213,12 +216,14 @@ final class RoutineExercise {
         exerciseIndex: Int = 0,
         targetSets: Int = 3,
         targetReps: Int? = nil,
+        restSeconds: Int? = nil,
         exercise: Exercise? = nil
     ) {
         self.id = id
         self.exerciseIndex = exerciseIndex
         self.targetSets = targetSets
         self.targetReps = targetReps
+        self.restSeconds = restSeconds
         self.exercise = exercise
     }
 }
